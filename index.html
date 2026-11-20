@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101713" />
+    <title>IRONCLAD: Rocket Arena</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="eyebrow">TACTICAL COMBAT // 3V3</span>
+          <h1>IRONCLAD <span>ARENA</span></h1>
+        </div>
+        <div class="match-meta">
+          <label class="setting">AI
+            <select id="difficulty" aria-label="AI difficulty">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </label>
+          <label class="setting">MODE
+            <select id="mode" aria-label="Game mode">
+              <option value="quick" selected>Quick match</option>
+              <option value="practice">Practice</option>
+            </select>
+          </label>
+          <span class="timer" id="timer">00:00</span>
+        </div>
+      </header>
+
+      <section class="battle-layout">
+        <div class="battlefield-wrap">
+          <canvas id="gameCanvas" width="1000" height="650" tabindex="0" aria-label="Top-down 3v3 tank arena"></canvas>
+          <button id="exitMatchButton" class="match-exit" type="button" hidden>EXIT MATCH</button>
+          <section id="tutorialHud" class="tutorial-hud" aria-live="polite" hidden>
+            <div class="tutorial-kicker">TRAINING SIMULATION <span id="tutorialProgress">01 / 07</span></div>
+            <h2 id="tutorialTitle">Drive your tank</h2>
+            <p id="tutorialInstruction">Use W, A, S, D to move around the arena.</p>
+            <div class="tutorial-progress"><span id="tutorialProgressBar"></span></div>
+            <button id="tutorialExitButton" class="quiet-button" type="button">Exit tutorial</button>
+          </section>
+          <section class="radar-card radar-overlay" aria-label="Tactical radar">
+            <div class="section-title"><span>TACTICAL RADAR</span><span class="radar-live">LIVE</span></div>
+            <canvas id="minimap" width="210" height="140" aria-label="Tactical minimap"></canvas>
+          </section>
+          <div class="battle-hint">WASD MOVE <i></i> MOUSE AIM + FIRE <i></i> SPACE DRIFT <i></i> 1 / 2 / 3 WEAPONS</div>
+          <button id="fullscreenExit" class="fullscreen-exit" type="button">EXIT FULLSCREEN</button>
+          <div id="overlay" class="overlay visible">
+            <div class="panel">
+              <span class="eyebrow">OPERATION IRONCLAD</span>
+              <h2 id="title">Lock and load.</h2>
+              <p id="message">Lead your squad, break enemy lines, and destroy all three hostile tanks. Walls stop rockets and block vision.</p>
+              <div class="lobby-controls" id="lobbyControls">
+                <label class="form-field">CALLSIGN
+                  <input id="playerName" maxlength="18" autocomplete="nickname" placeholder="Enter your name" />
+                </label>
+                <div class="lobby-options">
+                  <label class="form-field">MATCH MODE
+                    <select id="matchMode">
+                      <option value="elimination" selected>Team elimination</option>
+                      <option value="team-deathmatch">Team deathmatch</option>
+                      <option value="survival">Survival · last tank standing</option>
+                    </select>
+                  </label>
+                  <label class="form-field" id="teamFormatField">TEAM FORMAT
+                    <select id="teamFormat">
+                      <option value="1v1">1v1</option>
+                      <option value="2v2">2v2</option>
+                      <option value="3v3" selected>3v3</option>
+                      <option value="2v3">2v3</option>
+                      <option value="1v3">1v3</option>
+                    </select>
+                  </label>
+                  <label class="form-field" id="playerLimitField" hidden>ROOM PLAYER LIMIT
+                    <select id="playerLimit">
+                      <option value="2">2 players</option>
+                      <option value="3">3 players</option>
+                      <option value="4">4 players</option>
+                      <option value="5">5 players</option>
+                      <option value="6" selected>6 players</option>
+                      <option value="7">7 players</option>
+                      <option value="8">8 players</option>
+                      <option value="9">9 players</option>
+                      <option value="10">10 players</option>
+                      <option value="11">11 players</option>
+                      <option value="12">12 players (max)</option>
+                    </select>
+                  </label>
+                  <label class="form-field">MATCH LENGTH
+                    <select id="matchDuration">
+                      <option value="300" selected>5 minutes</option>
+                      <option value="600">10 minutes</option>
+                      <option value="900">15 minutes</option>
+                      <option value="0">No time limit</option>
+                    </select>
+                  </label>
+                  <label class="form-field">ARENA MAP
+                    <select id="mapSelect">
+                      <option value="steel-yard" selected>Steel Yard</option>
+                      <option value="forest">Greenwood Forest</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="lobby-actions">
+                  <button id="startButton" type="button">Quick match vs AI</button>
+                  <button id="tutorialButton" class="secondary-button tutorial-button" type="button">Training tutorial</button>
+                  <button id="publicMatchButton" class="secondary-button" type="button">Find public match</button>
+                  <button id="createRoomButton" class="secondary-button" type="button">Create private room</button>
+                </div>
+                <div class="join-row">
+                  <input id="roomCode" maxlength="6" autocomplete="off" placeholder="ROOM CODE" aria-label="Private room code" />
+                  <button id="joinRoomButton" class="secondary-button" type="button">Join room</button>
+                </div>
+                <div class="online-status" id="onlineStatus" role="status" aria-live="polite">Online rooms connect to the game host.</div>
+                <div class="room-lobby" id="roomLobby" hidden>
+                  <div class="room-heading"><span id="roomHeading">ROOM</span><button id="copyRoomButton" class="quiet-button" type="button">Copy code</button></div>
+                  <div id="roomPlayers" class="room-players"></div>
+                  <div id="roomMatchInfo" class="room-match-info"></div>
+                  <div class="room-actions">
+                    <button id="roomStartButton" class="secondary-button" type="button">Start match</button>
+                    <button id="leaveRoomButton" class="quiet-button" type="button">Leave room</button>
+                  </div>
+                </div>
+              </div>
+              <small>WASD move · Mouse aim/fire · Space drift · 1/2/3 select rocket</small>
+            </div>
+          </div>
+        </div>
+        <aside class="combat-panel">
+          <section class="squad-card">
+            <div class="section-title"><span>YOUR SQUAD</span><b class="blue-dot"></b></div>
+            <div id="allies" class="tank-list"></div>
+          </section>
+          <section class="weapon-card">
+            <div class="section-title"><span>ORDNANCE</span><span class="ammo-label" id="weaponSlot">01 / 03</span></div>
+            <div class="weapon-name" id="weaponName">STANDARD MISSILE</div>
+            <div class="weapon-info" id="weaponInfo">Balanced · 3 rounds</div>
+            <div class="reload-track"><span id="reloadBar"></span></div>
+            <div class="reload-caption" id="reloadCaption">READY TO FIRE</div>
+            <div class="weapon-switch"><kbd>1</kbd> STD <kbd>2</kbd> HOMING <kbd>3</kbd> HEAVY</div>
+          </section>
+          <div class="team-score"><span id="scoreLeftLabel">BLUE</span><strong id="blueCount">3</strong><i id="scoreDivider">VS</i><strong id="redCount">3</strong><span id="scoreRightLabel">RED</span></div>
+          <div class="combat-foot">
+            <span>ARENA: STEEL YARD</span>
+            <div class="display-controls">
+              <button id="soundToggle" type="button" aria-pressed="true">SOUND: ON</button>
+              <button id="shakeToggle" type="button" aria-pressed="false">SHAKE: ON</button>
+              <button id="fullscreenToggle" type="button" aria-label="Enter fullscreen">FULLSCREEN</button>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </main>
+    <script src="game.js"></script>
+  </body>
+</html>
